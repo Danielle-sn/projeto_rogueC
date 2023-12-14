@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 Monster's Escape
 Descrição
 Monster's Escape é um jogo simples no qual o jogador precisa escapar de um monstro enquanto busca por chaves para abrir portões. O objetivo é coletar 3 chaves o mais rápido possível para vencer!
@@ -39,3 +40,5 @@ Thiago Cavalcante Ferreira Filho
 Instrutor
 Este projeto foi realizado sob a orientação de Joabe, professor da disciplina de Programação Imperativa da Universidade de Pernambuco (UPE).
 
+=======
+>>>>>>> 54e534a79e93508adeeebe29c18500899d993b35
