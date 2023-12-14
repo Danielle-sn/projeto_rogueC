@@ -5,11 +5,10 @@ Monster's Escape é um jogo simples no qual o jogador precisa escapar de um mons
 ## Requisitos
 Sistema operacional Linux ou um ambiente simulado Linux.
 Não é compatível com o sistema Windows.
-Compilação
-Ja disponibilizamos o jogo executavel, mas se preferir para compilar o jogo, siga os seguintes passos:
 
-## Clone este repositório:
-
+## Compilação
+Ja disponibilizamos o jogo executavel, mas se quiser copilar o jogo pelo codigo fonte, siga os seguintes passos:
+Clone este repositório:
 bash
 Copy code
 git clone https://github.com/Danielle-sn/projeto_rogueC
