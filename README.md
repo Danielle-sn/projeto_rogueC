@@ -33,10 +33,11 @@ Use as teclas ou comandos especificados para mover o personagem e interagir com 
 ## Autores
 Este projeto foi inicialmente desenvolvido em Python durante o 1º período de Engenharia da Computação e posteriormente convertido para C no 2º período, como parte da disciplina de Programação Imperativa. Os autores do projeto são:
 
-Danielle Stephany Nunes
-Isabella Vitoria Gonçalves Costa 
-Michelly Darquia da Silva
+Danielle Stephany Nunes -
+Isabella Vitoria Gonçalves Costa -
+Michelly Darquia da Silva -
 Thiago Cavalcante Ferreira Filho
-Instrutor
+
+## Instrutor
 Este projeto foi realizado sob a orientação de Joabe, professor da disciplina de Programação Imperativa da Universidade de Pernambuco (UPE).
 
