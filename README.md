@@ -12,35 +12,26 @@ Ja disponibilizamos o jogo executavel, mas se quiser copilar o jogo pelo codigo 
 Clone este repositório:
 
 bash
-
 Copy code
-
 git clone https://github.com/Danielle-sn/projeto_rogueC
 
 Navegue até o diretório do projeto:
 
 bash
-
 Copy code
-
 cd nome-do-repositorio
 
 Compile o jogo usando o GCC:
 
 bash
-
 Copy code
-
 gcc -o main main.c menu.c -lncurses
 
 Como Jogar
 
 Execute o jogo compilado:
-
 bash
-
 Copy code
-
 ./main
 
 Use as teclas ou comandos especificados para mover o personagem e interagir com o ambiente.
