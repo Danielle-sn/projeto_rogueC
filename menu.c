@@ -6,12 +6,8 @@
 #define altura 40
 #define largura 160
 
-//int x0 = 0
 //inicializar fora do exibir menu depois importar a x0 para dentro do exibir menu nao fumcione provaverlmente
 // criar um aray e return ele
-
-
-void jogar
 
 
 void exibirmenu() {
