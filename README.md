@@ -11,33 +11,26 @@ Ja disponibilizamos o jogo executavel, mas se quiser copilar o jogo pelo codigo 
 
 Clone este repositório:
 
-bash
-Copy code
 git clone https://github.com/Danielle-sn/projeto_rogueC
 
 Navegue até o diretório do projeto:
 
-bash
-Copy code
 cd nome-do-repositorio
 
-Compile o jogo usando o GCC:
+Compile o jogo usando o copilador GCC:
 
-bash
-Copy code
-gcc -o main main.c menu.c -lncurses
+gcc -o Monster_Escape main.c funcoes.c -lncurses
 
-Como Jogar
+Como Jogar?
 
 Execute o jogo compilado:
-bash
-Copy code
-./main
+
+./Monster_Escape
 
 Use as teclas ou comandos especificados para mover o personagem e interagir com o ambiente.
 
 ## Autores
-Este projeto foi inicialmente desenvolvido em Python durante o 1º período de Engenharia da Computação e posteriormente convertido para C no 2º período, como parte da disciplina de Programação Imperativa. Os autores do projeto são:
+Este projeto teve sua origem no primeiro período de Engenharia da Computação, onde foi inicialmente desenvolvido em Python com a biblioteca curses. No segundo período, como parte da disciplina de Programação Imperativa, realizamos a conversão do projeto para a linguagem de programação C, utilizando a bibliolioteca ncurses.
 
 Danielle Stephany Nunes 
 
@@ -48,5 +41,4 @@ Michelly Darquia da Silva
 Thiago Cavalcante Ferreira Filho
 
 ## Instrutor
-Este projeto foi realizado sob a orientação de Joabe, professor da disciplina de Programação Imperativa da Universidade de Pernambuco (UPE).
-
+ O projeto foi realizado sob a orientação de Joabe Bezerra de Jesus Junior, professor da disciplina de Programação Imperativa da Universidade de Pernambuco (UPE).
