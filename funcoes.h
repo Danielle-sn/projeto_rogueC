@@ -23,18 +23,25 @@ typedef struct {
     ModoDificuldade dificuldade;
 }Jogador;
 
+typedef struct {
+    Jogador jogadores[10];
+    int quantidade; // Número atual de jogadores no ranking
+} Ranking;
+
+
+const char* dificuldadeToString(ModoDificuldade dificuldade);
 
 //--------------------FUNCOES ----------------------------//
 
-Jogador WIN_NICK_JOG();
+Jogador WIN_NICK_JOG(Jogador jogador);
 void ABERTURA();
 
 //-------- FUNCOES DO MENU PRINCIPAL (MAIN) ---------//
 
 
-void JOGAR();
-void RANKING();
-Jogador CONFIGURACOES();
+void JOGAR(Jogador jogador);
+void RANKING(Jogador jogador);
+char CONFIGURACOES(Jogador jogador);
 void INSTRUCOES();
 
 //// MENU PAUSAR ///
