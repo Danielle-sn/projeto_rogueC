@@ -7,7 +7,7 @@
 
 #define altura 40
 #define largura 160
-
+Chave chaves[3];
 Ranking ranking = {.quantidade = 0};
 
 //////// CONSTANTES //////
@@ -55,6 +55,7 @@ char *fimdejogo[] = {
 "|   __|-   -| | | |  |  |  |   __|  |  |  |  |  |  |  |  |  |",
 "|__|  |_____|_|_|_|  |____/|_____|  |_____|_____|_____|_____|"
 };
+
 char *Criadores[] = { "  CRIADORES ",
 "Danielle Nunes", 
 "Isabella Costa", 
@@ -73,7 +74,6 @@ const char* dificuldadeToString(ModoDificuldade dificuldade) {
     }
 }
 //--------------------FUNCOES ----------------------------//
-
 
 void ABERTURA(WINDOW *win, int offset) {
     wclear(win);
@@ -337,8 +337,6 @@ void RANKING(Jogador jogador) {
     return;
 }
 
-//// MENU PAUSAR ///
-
 void menu_pausar(){
     initscr();
     cbreak();
@@ -400,7 +398,349 @@ void menu_pausar(){
     }
 }
 
+void INSTRUCOES() {
+    initscr();
+    cbreak();
+    noecho();
+    keypad(stdscr, TRUE);
 
+    curs_set(0);
+    clear();
+    refresh();
+    resize_term(40, 160);
+    int inicioy = (LINES - altura) / 2;
+    int iniciox = (COLS - largura) / 2;
+    WINDOW *win = newwin(altura, largura, inicioy, iniciox);
+
+    int texto_alt = sizeof(instru) / sizeof(instru[0]);
+    int texto_larg = 0;
+
+    box(win, 0,0);
+    // Calcula o comprimento da linha mais longa nas instruções
+    for (int i = 0; i < texto_alt; i++) {
+        int comprimento_instrucao = strlen(instru[i]);
+        texto_larg = comprimento_instrucao > texto_larg ? comprimento_instrucao : texto_larg;
+    }
+
+    // Calcula as coordenadas para posicionar a janela de instruções centralmente na tela
+    int instru_y = (altura - texto_alt) / 2;
+    int instru_x = (largura - texto_larg) / 2;
+    
+
+    // Exibe as instruções na tela
+    for (int i = 0; i < texto_alt; i++) {
+    mvwaddstr(win, instru_y + i, instru_x, instru[i]);
+    }
+    for (int i = 0; i < 5; i++) {  // EXIB CRIADORES
+        mvwprintw(win, 33 + i, 3, "%s", Criadores[i]);
+    }
+
+    wrefresh(win);
+    wgetch(win);
+    endwin();
+    return;
+}
+
+//////////////////////JOGO ////////////////////////////
+
+void criarSala(Sala *sala, int alt, int larg) {
+    sala->alt = alt;  // Altere para a alt desejada
+    sala->larg = larg; // Altere para a larg desejada
+
+
+    sala->layout = (char **)malloc(sala->alt * sizeof(char *));
+    for (int i = 0; i < sala->alt; i++) {
+        sala->layout[i] = (char *)malloc(sala->larg * sizeof(char));
+        for (int j = 0; j < sala->larg; j++) {
+            if (i == 0 || j == 0 || i == sala->alt - 1 || j == sala->larg - 1) {
+                sala->layout[i][j] = '#';
+            } else {
+                sala->layout[i][j] = '.';
+            }
+        }
+    }
+}
+
+void desenharSala(WINDOW *win, Sala sala, int comecoY, int comecoX) {
+    for (int i = 0; i < sala.alt; ++i) {
+        for (int j = 0; j < sala.larg; ++j) {
+            int posY = comecoY + i;
+            int posX = comecoX + j;
+
+            if (posY >= 0 && posY < getmaxy(win) && posX >= 0 && posX < getmaxx(win)) {
+                mvwaddch(win, posY, posX, sala.layout[i][j]);
+            }
+        }
+    }
+}
+
+void obterLimitesDaSala(int sala, int *comecoY, int *comecoX, int *altSala, int *largSala) {
+    switch (sala) {
+    case 1:
+        *comecoY = 7;
+        *comecoX = 20;
+        *altSala = 20;
+        *largSala = 40;
+        break;
+    case 2:
+        *comecoY = 20;
+        *comecoX = 80;
+        *altSala = 15;
+        *largSala = 30;
+        break;
+    case 3:
+        *comecoY = 13;
+        *comecoX = 120;
+        *altSala = 10;
+        *largSala = 20;
+        break;
+    }
+}
+
+void liberarSala(Sala *sala) {
+    for (int i = 0; i < sala->alt; i++) {
+        free(sala->layout[i]);
+    }
+    free(sala->layout);
+}
+
+void desenharCaminho(WINDOW* win, int yCaminho, int xCaminho, int alt, int comprimento) {
+    if (alt == 1) {  // caminho na horizontal
+        for (int i = 0; i < comprimento; ++i) {
+            mvwaddch(win, yCaminho, xCaminho + i, '.');
+        }
+    }
+
+
+    if (comprimento == 1) {  // caminho na vertical
+        for (int j = 0; j < alt; ++j) {
+            mvwaddch(win, yCaminho + j, xCaminho, '.');
+        }
+    }
+}
+
+void desenharBorda(WINDOW* win, int yCaminho, int xCaminho, int alt, int comprimento) {
+    if (alt == 1) {  // caminho na horizontal
+        for (int i = 0; i < comprimento; ++i) {
+            mvwaddch(win, yCaminho, xCaminho + i, '#');
+        }
+    }
+
+
+
+
+    if (comprimento == 1) {  // caminho na vertical
+        for (int j = 0; j < alt; ++j) {
+            mvwaddch(win, yCaminho + j, xCaminho, '#');
+        }
+    }
+}
+
+void exibirCaminhoBorda(WINDOW* win) {
+    desenharCaminho(win, 32, 30, 1, 50);  // sala1 horizontal
+    desenharCaminho(win, 27, 30, 5, 1);   // sala1 vertical
+    desenharCaminho(win, 16, 89, 1, 31);  // sala2 horizontal
+    desenharCaminho(win, 16, 88, 4, 1);   // sala2 vertical
+
+
+
+
+    desenharBorda(win, 31, 32, 1, 49);  // sala 1 horizontal
+    desenharBorda(win, 33, 30, 1, 50);  // sala 1 horizontal
+    desenharBorda(win, 27, 29, 7, 1);   // sala1 vertical
+    desenharBorda(win, 27, 31, 5, 1);   // sala1 vertical
+    desenharBorda(win, 15, 87, 1, 33);  // sala2 horizontal
+    desenharBorda(win, 17, 89, 1, 31);  // sala2 horizontal
+    desenharBorda(win, 15, 87, 5, 1);   // sala2 vertical
+    desenharBorda(win, 18, 89, 3, 1);   // sala2 vertical
+}
+
+/////////////////////////////CHAVES /////////////
+
+Chave criarChave(Sala *sala, int comecoY, int comecoX, int alt, int larg) {
+    Chave chave;
+
+    do {
+        chave.posX = rand() % (larg - 2) + comecoX + 1;
+        chave.posY = rand() % (alt - 2) + comecoY + 1;
+    } while (sala->layout[chave.posY - comecoY][chave.posX - comecoX] != '.' );
+
+    chave.character = 'K';
+    chave.coletada = 0;
+
+    return chave;
+}
+
+
+void exibirChave(Chave chave, Sala sala) {
+    if (!chave.coletada) {
+        mvaddch(chave.posY, chave.posX, chave.character);
+    }
+}
+
+
+///////////////////////BONECO////////////////////////////
+         
+
+void criarBoneco_meio(Boneco *boneco, Jogador *jogador, int posY, int posX) {
+    boneco->posY = posY;
+    boneco->posX = posX;
+    boneco->character = jogador->personagem;
+}
+
+void exibirBoneco(WINDOW *win, Boneco boneco, int comecoY, int comecoX) {
+    mvwaddch(win, comecoY + boneco.posY, comecoX + boneco.posX, boneco.character);
+}
+
+/////MOVIMENTACAO////
+int posicaoValida(Sala sala, int posY, int posX, Chave chave) {
+    if (posY >= 0 && posY < sala.alt && posX >= 0 && posX < sala.larg) {
+        char elemento = sala.layout[posY][posX];
+        
+        if (elemento == '.') {
+
+            return 1;  // Posição válida
+        } else if (elemento == 'K') {
+            chave.coletada ++;
+            //sala.layout[posY][posX] = '.';  // Remover a chave da sala
+                mvaddch(3 , 59, chave.coletada);
+
+                return chave.coletada;  // Posição válida
+        }
+    }
+    return 0;  // Posição inválida
+}
+
+void moverBoneco(Boneco *boneco, Sala *sala, int deltaY, int deltaX, Chave *chave) {
+    int novaPosY = boneco->posY + deltaY;
+    int novaPosX = boneco->posX + deltaX;
+
+    if (posicaoValida(*sala, novaPosY, novaPosX, *chave)) {
+        boneco->posY = novaPosY;
+        boneco->posX = novaPosX;
+    }
+}
+
+
+void jogarRogue(Jogador jogador) {
+
+    initscr(); 
+    noecho(); // esconde o cursor
+    curs_set(0); 
+    keypad(stdscr, TRUE);
+    resize_term(40, 160); 
+
+    WINDOW *win = newwin(40, 160, 0, 0);
+
+
+    Sala sala1, sala2, sala3;
+    Chave chave;
+    Chave chaveSala1, chaveSala2, chaveSala3;
+    Boneco boneco;
+    criarSala(&sala1, 20, 40);
+    criarSala(&sala2, 15, 30);
+    criarSala(&sala3, 10, 20);
+    criarBoneco_meio(&boneco, &jogador, 8, 18);
+
+    chaveSala1 = criarChave(&sala1, 7, 20, 20, 40);
+    chaveSala2 = criarChave(&sala2, 20, 80, 15, 30);
+    chaveSala3 = criarChave(&sala3, 13, 120, 10, 20);
+    
+    //captr o tempo para ranking
+    time_t inicio_tempo, tempo_atual;
+    jogador.tempo = 0;
+    time(&inicio_tempo);
+    int tempo_limite = 20;  // Tempo padrão
+    switch (jogador.dificuldade) {
+            case FACIL:
+                tempo_limite = 2;
+                break;
+            case MEDIO:
+                tempo_limite = 5;
+                break;
+            case DIFICIL:
+                tempo_limite = 5;
+                break;
+            default:
+                break;
+        }
+        mvwprintw(win, 5, 35, "Dificuldade: %s", dificuldadeToString(jogador.dificuldade));
+
+    while (1) {
+        werase(win);
+        time(&tempo_atual);
+        jogador.tempo = difftime(tempo_atual, inicio_tempo);
+
+
+        time(&tempo_atual);
+        jogador.tempo = difftime(tempo_atual, inicio_tempo);
+
+        mvwprintw(win, 3, 35, "TEMPO: %d segundos", (int)jogador.tempo);
+        usleep(1000);
+        mvwprintw(win, 5, 35, "Dificuldade: %s", dificuldadeToString(jogador.dificuldade));
+
+        mvwprintw(win, 4, 35, "Personagem: %c", jogador.personagem);
+
+        desenharSala(win, sala1, 7, 20);
+        desenharSala(win, sala2, 20, 80);
+        desenharSala(win, sala3, 13, 120);
+        exibirCaminhoBorda(win);
+        exibirBoneco(win, boneco, 7, 20);
+
+        
+        exibirChave(chaveSala1, sala1);
+        exibirChave(chaveSala2, sala2);
+        exibirChave(chaveSala3, sala3);
+        
+        
+        //if (boneco.posY == chave.posY && boneco.posX == chave.posX){
+        //mvwaddch(win, chave.posY, chave.posX, '.');
+        //}
+
+        wrefresh(win); 
+
+//////////////////////// PEGAR TECLA DO USUARIO P MOVIMENTAR O BONECO /////////////////////////////////////
+
+
+        int ch = getch();  // Obtém a entrada do usuário
+        switch (ch) {
+            case KEY_UP:
+            case 'w':
+            case 'W':
+moverBoneco(&boneco, &sala1, -1, 0, chaves);
+                break;
+            case KEY_DOWN:
+            case 's':
+            case 'S':
+moverBoneco(&boneco, &sala1, 1, 0, chaves);
+                break;
+            case KEY_LEFT:
+            case 'a':
+            case 'A':
+moverBoneco(&boneco, &sala1, 0, -1, chaves);
+                break;
+            case KEY_RIGHT:
+            case 'd':
+            case 'D':
+moverBoneco(&boneco, &sala1, 0, 1, chaves);
+                break;
+            case 27: // ESC
+                //gameover = 1;
+                break;
+        }
+    }
+
+delwin(win);  // Deleta a janela
+endwin();
+}
+
+
+//void JOGAR_MAIN() {
+
+
+
+
+/////////////////////////////////////////////////////
 
 void JOGAR(Jogador jogador){
     initscr();
@@ -510,49 +850,6 @@ void JOGAR(Jogador jogador){
     return;
 }
 
-
-void INSTRUCOES() {
-    initscr();
-    cbreak();
-    noecho();
-    keypad(stdscr, TRUE);
-
-    curs_set(0);
-    clear();
-    refresh();
-    resize_term(40, 160);
-    int inicioy = (LINES - altura) / 2;
-    int iniciox = (COLS - largura) / 2;
-    WINDOW *win = newwin(altura, largura, inicioy, iniciox);
-
-    int texto_alt = sizeof(instru) / sizeof(instru[0]);
-    int texto_larg = 0;
-
-    box(win, 0,0);
-    // Calcula o comprimento da linha mais longa nas instruções
-    for (int i = 0; i < texto_alt; i++) {
-        int comprimento_instrucao = strlen(instru[i]);
-        texto_larg = comprimento_instrucao > texto_larg ? comprimento_instrucao : texto_larg;
-    }
-
-    // Calcula as coordenadas para posicionar a janela de instruções centralmente na tela
-    int instru_y = (altura - texto_alt) / 2;
-    int instru_x = (largura - texto_larg) / 2;
-    
-
-    // Exibe as instruções na tela
-    for (int i = 0; i < texto_alt; i++) {
-    mvwaddstr(win, instru_y + i, instru_x, instru[i]);
-    }
-    for (int i = 0; i < 5; i++) {  // EXIB CRIADORES
-        mvwprintw(win, 33 + i, 3, "%s", Criadores[i]);
-    }
-
-    wrefresh(win);
-    wgetch(win);
-    endwin();
-    return;
-}
 
 
 

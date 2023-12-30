@@ -5,10 +5,9 @@
 
 
 
-
 typedef struct {
-    int altura;
-    int largura;
+    int alt;
+    int larg;
     char **layout;
 } Sala;
 
@@ -19,28 +18,29 @@ typedef struct {
     char character;
 } Boneco;
 
-
 typedef struct {
     int posY;
     int posX;
     char character;
     int coletada;  // Adicione um campo para verificar se a chave foi coletada
+    int id;
 } Chave;
 
+Chave chaves[3];
 
 
+//////////////////////// Salas ///////////////////////////////
 
-// Salas
-void criarSala(Sala *sala, int altura, int largura) {
-    sala->altura = altura;  // Altere para a altura desejada
-    sala->largura = largura; // Altere para a largura desejada
+void criarSala(Sala *sala, int alt, int larg) {
+    sala->alt = alt;  // Altere para a alt desejada
+    sala->larg = larg; // Altere para a larg desejada
 
 
-    sala->layout = (char **)malloc(sala->altura * sizeof(char *));
-    for (int i = 0; i < sala->altura; i++) {
-        sala->layout[i] = (char *)malloc(sala->largura * sizeof(char));
-        for (int j = 0; j < sala->largura; j++) {
-            if (i == 0 || j == 0 || i == sala->altura - 1 || j == sala->largura - 1) {
+    sala->layout = (char **)malloc(sala->alt * sizeof(char *));
+    for (int i = 0; i < sala->alt; i++) {
+        sala->layout[i] = (char *)malloc(sala->larg * sizeof(char));
+        for (int j = 0; j < sala->larg; j++) {
+            if (i == 0 || j == 0 || i == sala->alt - 1 || j == sala->larg - 1) {
                 sala->layout[i][j] = '#';
             } else {
                 sala->layout[i][j] = '.';
@@ -49,11 +49,9 @@ void criarSala(Sala *sala, int altura, int largura) {
     }
 }
 
-
-
 void desenharSala(WINDOW *win, Sala sala, int comecoY, int comecoX) {
-    for (int i = 0; i < sala.altura; ++i) {
-        for (int j = 0; j < sala.largura; ++j) {
+    for (int i = 0; i < sala.alt; ++i) {
+        for (int j = 0; j < sala.larg; ++j) {
             int posY = comecoY + i;
             int posX = comecoX + j;
 
@@ -64,42 +62,38 @@ void desenharSala(WINDOW *win, Sala sala, int comecoY, int comecoX) {
     }
 }
 
-
-void obterLimitesDaSala(int sala, int *comecoY, int *comecoX, int *alturaSala, int *larguraSala) {
+void obterLimitesDaSala(int sala, int *comecoY, int *comecoX, int *altSala, int *largSala) {
     switch (sala) {
     case 1:
         *comecoY = 7;
         *comecoX = 20;
-        *alturaSala = 20;
-        *larguraSala = 40;
+        *altSala = 20;
+        *largSala = 40;
         break;
     case 2:
         *comecoY = 20;
         *comecoX = 80;
-        *alturaSala = 15;
-        *larguraSala = 30;
+        *altSala = 15;
+        *largSala = 30;
         break;
     case 3:
         *comecoY = 13;
         *comecoX = 120;
-        *alturaSala = 10;
-        *larguraSala = 20;
+        *altSala = 10;
+        *largSala = 20;
         break;
     }
 }
 
-
-
 void liberarSala(Sala *sala) {
-    for (int i = 0; i < sala->altura; i++) {
+    for (int i = 0; i < sala->alt; i++) {
         free(sala->layout[i]);
     }
     free(sala->layout);
 }
 
-
-void desenharCaminho(WINDOW* win, int yCaminho, int xCaminho, int altura, int comprimento) {
-    if (altura == 1) {  // caminho na horizontal
+void desenharCaminho(WINDOW* win, int yCaminho, int xCaminho, int alt, int comprimento) {
+    if (alt == 1) {  // caminho na horizontal
         for (int i = 0; i < comprimento; ++i) {
             mvwaddch(win, yCaminho, xCaminho + i, '.');
         }
@@ -107,18 +101,15 @@ void desenharCaminho(WINDOW* win, int yCaminho, int xCaminho, int altura, int co
 
 
     if (comprimento == 1) {  // caminho na vertical
-        for (int j = 0; j < altura; ++j) {
+        for (int j = 0; j < alt; ++j) {
             mvwaddch(win, yCaminho + j, xCaminho, '.');
         }
     }
 }
 
-
-
-
 // Desenhar os limites dos caminhos
-void desenharBorda(WINDOW* win, int yCaminho, int xCaminho, int altura, int comprimento) {
-    if (altura == 1) {  // caminho na horizontal
+void desenharBorda(WINDOW* win, int yCaminho, int xCaminho, int alt, int comprimento) {
+    if (alt == 1) {  // caminho na horizontal
         for (int i = 0; i < comprimento; ++i) {
             mvwaddch(win, yCaminho, xCaminho + i, '#');
         }
@@ -128,14 +119,11 @@ void desenharBorda(WINDOW* win, int yCaminho, int xCaminho, int altura, int comp
 
 
     if (comprimento == 1) {  // caminho na vertical
-        for (int j = 0; j < altura; ++j) {
+        for (int j = 0; j < alt; ++j) {
             mvwaddch(win, yCaminho + j, xCaminho, '#');
         }
     }
 }
-
-
-
 
 // Exibir caminhos e bordas
 void exibirCaminhoBorda(WINDOW* win) {
@@ -157,52 +145,15 @@ void exibirCaminhoBorda(WINDOW* win) {
     desenharBorda(win, 18, 89, 3, 1);   // sala2 vertical
 }
 
-char gerarPlayer() {
-    return 'B';
-}
-
-void inicializarBoneco(Boneco *boneco, int posY, int posX) {
-    boneco->posY = posY;
-    boneco->posX = posX;
-    boneco->character = 'B';
-}
-
-
-void exibirBoneco(WINDOW *win, Boneco boneco, int comecoY, int comecoX) {
-    mvwaddch(win, comecoY + boneco.posY, comecoX + boneco.posX, 'B');
-}
-
-
-int posicaoValida(Sala sala, int posY, int posX) {
-    return (posY >= 0 && posY < sala.altura && posX >= 0 && posX < sala.largura &&
-            sala.layout[posY][posX] == '.');
-}
-
-
-void moverBoneco(Boneco *boneco, Sala sala, int deltaY, int deltaX) {
-    int novaPosY = boneco->posY + deltaY;
-    int novaPosX = boneco->posX + deltaX;
-
-
-    if (posicaoValida(sala, novaPosY, novaPosX)) {
-        boneco->posY = novaPosY;
-        boneco->posX = novaPosX;
-    }
-}
-
-
-// Chaves
-
-
+/////////////////////////////////Chaves////////////////////////////////
+//                              
 int chaves_coletadas = 0; // Adicionei esta variável para controlar as chaves coletadas
 
-
-
-char chave = 'K'; // Variável chave para a fase
+//char chave = 'K'; // Variável chave para a fase
 int x_boneco = 10, y_boneco = 10; // Posição do boneco
 int x_monstro = 15, y_monstro = 15; // Posição do monstro
-int comeco_x = 0, comeco_y = 0; // Posição inicial da sala
-int largura_sala = 20, altura_sala = 10; // Tamanho da sala
+//int comeco_x = 0, comeco_y = 0; // Posição inicial da sala
+//int larg_sala = 20, alt_sala = 10; // Tamanho da sala
 
 
 char *vitoria[] = {                                            
@@ -220,38 +171,45 @@ char *vocemorreu[] = {
 };
 // TEM QUE TIRAR ISSO
 // Variáveis globais
-int alt = 40;  // Altura da sala
-int larg = 160; // Largura da sala
+
+int alt = 40;  // alt da sala
+int larg = 160; // larg da sala
 
 
 
-
-Chave criarChave(Sala sala, int comecoY, int comecoX, int altura, int largura) {
+Chave criarChave(Sala *sala, int comecoY, int comecoX, int alt, int larg) {
     Chave chave;
-    do {
-        chave.posX = rand() % (largura - 2) + comecoX + 1;
-        chave.posY = rand() % (altura - 2) + comecoY + 1;
-    } while (sala.layout[chave.posY - comecoY][chave.posX - comecoX] != '.');
 
+    do {
+        chave.posX = rand() % (larg - 2) + comecoX + 1;
+        chave.posY = rand() % (alt - 2) + comecoY + 1;
+    } while (sala->layout[chave.posY - comecoY][chave.posX - comecoX] != '.' ||
+            sala->layout[chave.posY - comecoY + 1][chave.posX - comecoX] != '.');
 
     chave.character = 'K';
     chave.coletada = 0;
 
+    // Adiciona a chave à matriz da sala
+    sala->layout[chave.posY - comecoY][chave.posX - comecoX] = chave.character;
 
-    mvaddch(chave.posY, chave.posX, chave.character);
     return chave;
 }
+
 void exibirChave(Chave chave, Sala sala) {
     if (!chave.coletada) {
         mvaddch(chave.posY, chave.posX, chave.character);
     }
 }
-void verificacao_morte_ou_vitoria() {
+/*
+
+
+// posso usaraltura e largura do funcoes.c define
+//void verificacao_morte_ou_vitoria() {
     if (y_boneco == y_monstro && x_boneco == x_monstro) {
         clear();
         // Mostra derrota na tela
-        int x = ((largura_sala + comeco_x) / 2) - 1;
-        int y = ((altura_sala + comeco_y) / 2) - 1;
+        int x = ((larg_sala + comeco_x) / 2) - 1;
+        int y = ((alt_sala + comeco_y) / 2) - 1;
         for (int i = 0; i < sizeof(vocemorreu) / sizeof(vocemorreu[0]); i++) {
             mvaddstr(y + i, x, vocemorreu[i]);
             refresh();
@@ -259,14 +217,95 @@ void verificacao_morte_ou_vitoria() {
     } else if (chaves_coletadas == 3) {
         clear();
         // Mostra vitória na tela
-        int x = ((largura_sala + comeco_x) / 2) - 1;
-        int y = ((altura_sala + comeco_y) / 2) - 1;
+        int x = ((larg_sala + comeco_x) / 2) - 1;
+        int y = ((alt_sala + comeco_y) / 2) - 1;
         for (int i = 0; i < sizeof(vitoria) / sizeof(vitoria[0]); i++) {
             mvaddstr(y + i, x, vitoria[i]);
             refresh();
         }
     }
 }
+*/
+
+
+/////////////////////////////////////////////////////////////////
+///                         BONECO
+
+
+//char gerarPlayer() {
+//    return 'B';
+//}
+
+void inicializarBoneco(Boneco *boneco, int posY, int posX) {
+    boneco->posY = posY;
+    boneco->posX = posX;
+    boneco->character = 'B';
+}
+
+
+void exibirBoneco(WINDOW *win, Boneco boneco, int comecoY, int comecoX) {
+    mvwaddch(win, comecoY + boneco.posY, comecoX + boneco.posX, 'B');
+}
+
+//  // Verificar se o personagem está em cima de uma chave
+//         if (sala->layout[novaPosY][novaPosX] == 'K') {
+//             // Coletar a chave
+//             sala->layout[novaPosY][novaPosX] = '.'; 
+//             chaves -> coletada++; 
+
+// if (boneco.posY == chave.posY && boneco.posX == chave.posX){
+       //mvwaddch(win,chave.posY, chave.posX, '.');
+//         }
+
+int posicaoValida(Sala sala, int posY, int posX, Chave chaves) {
+    for (int i = 0; i < 2; i++) {
+        if (posY >= 0 && posY < sala.alt && posX >= 0 && posX < sala.larg) {
+            char elemento = sala.layout[posY][posX];
+            
+            if (elemento == '.') {
+                return 1;  // Posição válida
+            } else if (elemento == 'K') {
+                chaves.coletada++;
+                sala.layout[posY][posX] = '.';  // Remover a chave da sala
+                return 1;  // Posição válida
+            }
+        }
+    }
+    return 0;  // Posição inválida
+}
+
+/*
+void moverBoneco(Boneco *boneco, Sala *sala, Chave chaves[], int deltaY, int deltaX) {
+    int novaPosY = boneco->posY + deltaY;
+    int novaPosX = boneco->posX + deltaX;
+
+    if (posicaoValida(*sala, novaPosY, novaPosX)) {
+        boneco->posY = novaPosY;
+        boneco->posX = novaPosX;
+*/
+
+void moverBoneco(Boneco *boneco, Sala *sala, int deltaY, int deltaX ) {
+    int novaPosY = boneco->posY + deltaY;
+    int novaPosX = boneco->posX+ deltaX;
+
+
+    if (posicaoValida(*sala, novaPosY, novaPosX, *chaves)) {
+        boneco->posY = novaPosY;
+        boneco->posX = novaPosX;
+
+        //sala->layout[novaPosY][novaPosX] = '.';  // Remover a chave da sala
+
+        // Verificar se o personagem está em cima de uma chave
+        //if (sala->layout[novaPosY][novaPosX] == 'K') {
+            // Coletar a chave
+            //sala->layout[novaPosY][novaPosX] = '.';  // Remover a chave da sala
+            //chaves->coletada++;  // Note o uso de parênteses para dereferenciar o ponteiro antes de incrementar
+
+            // Você pode adicionar lógica aqui para lidar com a coleta da chave, se necessário
+        }
+    }
+
+
 
 
 
@@ -283,7 +322,7 @@ int coordenadaUsada(int coordenadasUsadas[][2], int numMonstros, int x, int y) {
     return 0; // Coordenada não usada
 }
 
-
+/*
 //Distribui monstros aleatoriamente em uma sala
 void distribuirMonstros(int sala, int numMonstrosPorSala) {
     int comecoY, comecoX, altSala, largSala;
@@ -343,7 +382,9 @@ void moverMonstro(int *xMonstro, int *yMonstro, int salaAtual) {
 }
 
 
-void jogarRogue(WINDOW *win, int alturaSala1, int larguraSala1, int numMonstrosPorSala){
+*/
+
+void jogarRogue(WINDOW *win, int altSala1, int largSala1, int numMonstrosPorSala){
     Sala sala1, sala2, sala3;
     Chave chaveSala1, chaveSala2, chaveSala3;
 
@@ -353,15 +394,15 @@ void jogarRogue(WINDOW *win, int alturaSala1, int larguraSala1, int numMonstrosP
     criarSala(&sala3, 10, 20);
 
 
-    chaveSala1 = criarChave(sala1, 7, 20, 20, 40);
-    chaveSala2 = criarChave(sala2, 20, 80, 15, 30);
-    chaveSala3 = criarChave(sala3, 13, 120, 10, 20);
+    chaveSala1 = criarChave(&sala1, 7, 20, 20, 40);
+    chaveSala2 = criarChave(&sala2, 20, 80, 15, 30);
+    chaveSala3 = criarChave(&sala3, 13, 120, 10, 20);
     Boneco boneco;
-    inicializarBoneco(&boneco, alturaSala1 / 2, larguraSala1 / 2);
+    inicializarBoneco(&boneco, altSala1 / 2, largSala1 / 2);
 
 
     // Array para armazenar as coordenadas dos monstros (3 salas e 3 monstros por sala, ajuste conforme necessário)
-    int monstros[3][3];
+    //int monstros[3][3];
 
 /*
 
@@ -383,7 +424,10 @@ void jogarRogue(WINDOW *win, int alturaSala1, int larguraSala1, int numMonstrosP
 
 */
 
-
+    //captr o tempo para ranking
+    time_t inicio_tempo, tempo_atual;
+    int jogadortempo = 0;
+    time(&inicio_tempo);
 
 
     int gameover = 0;
@@ -391,13 +435,22 @@ void jogarRogue(WINDOW *win, int alturaSala1, int larguraSala1, int numMonstrosP
 
     while (!gameover) {
         werase(win);
-        refresh();
+        refresh(); 
         desenharSala(win, sala1, 7, 20);
         desenharSala(win, sala2, 20, 80);
         desenharSala(win, sala3, 13, 120);
         exibirBoneco(win, boneco, 7, 20);
 
-        mvwprintw(win, 3, 60, "CHAVES COLETADAS: %s", &chaves_coletadas);
+        mvwprintw(win, 3, 60, "CHAVES COLETADAS: %d", chaves->coletada);
+
+
+        time(&tempo_atual);
+        jogadortempo = difftime(tempo_atual, inicio_tempo);
+
+        mvwprintw(win, 3, 35, "TEMPO: %d segundos", (int)jogadortempo);
+        usleep(5000);
+        wrefresh(win);
+
 
         //distribuirMonstros(1, numMonstrosPorSala);  // Adicionar a chamada para exibir monstros na sala1
         //distribuirMonstros(2, numMonstrosPorSala);  // Adicionar a chamada para exibir monstros na sala2
@@ -412,20 +465,22 @@ void jogarRogue(WINDOW *win, int alturaSala1, int larguraSala1, int numMonstrosP
 
 
 
-
         exibirCaminhoBorda(win);
 
 
        
-        verificacao_morte_ou_vitoria();
-
+        //verificacao_morte_ou_vitoria();
 
         int troca = 0;
-        // if (chaveSala1.posX == boneco.posX && chaveSala1.posY == boneco.posY && !chaveSala1.coletada) {
-        //     chaveSala1.coletada = 1; // Marca a chave como coletada
-        //     chaves_coletadas++; // Incrementa o contador de chaves coletadas
+/*
+        if (chaveSala1.posX == boneco.posX && chaveSala1.posY == boneco.posY && !chaveSala1.coletada) {
+        chaveSala1.coletada = 1; // Marca a chave como coletada
+        chaves_coletadas++; 
+        }
+        // Incrementa o contador de chaves coletadas
         // }
 
+*/
 
        if (chaves_coletadas == 1 && !troca) {
             mvwprintw(win, 4, 125, "MUITO BEM! Você coletou uma chave!");
@@ -454,33 +509,33 @@ void jogarRogue(WINDOW *win, int alturaSala1, int larguraSala1, int numMonstrosP
 
 
 
-
         int ch = getch();
         switch (ch) {
             case KEY_UP:
             case 'w':
             case 'W':
-                moverBoneco(&boneco, sala1, -1, 0);
+                if (posicaoValida(sala1, boneco.posY - 1, boneco.posX, *chaves)) {
+                    moverBoneco(&boneco, &sala1, -1, 0);}
                 break;
             case KEY_DOWN:
             case 's':
             case 'S':
-                moverBoneco(&boneco, sala1, 1, 0);
+                moverBoneco(&boneco, &sala1, 1, 0);
                 break;
             case KEY_LEFT:
             case 'a':
             case 'A':
-                moverBoneco(&boneco, sala1, 0, -1);
+                moverBoneco(&boneco, &sala1, 0, -1);
                 break;
             case KEY_RIGHT:
             case 'd':
             case 'D':
-                moverBoneco(&boneco, sala1, 0, 1);
+                moverBoneco(&boneco, &sala1, 0, 1);
                 break;
             case 27: // ESC
                 gameover = 1;
                 break;
-        }
+        }k
 
 
         usleep(15000);
@@ -496,10 +551,8 @@ void jogarRogue(WINDOW *win, int alturaSala1, int larguraSala1, int numMonstrosP
 
 
 
-
 int main() {
     srand(time(NULL));
-
 
     initscr();
     raw();
@@ -511,26 +564,22 @@ int main() {
     init_pair(1, 166, 0);
     init_pair(2, 214, 0);
 
-
-    int alturaSala1, larguraSala1, numMonstrosPorSala;
-
+    int altSala1, largSala1, numMonstrosPorSala;
 
     // Defina aqui as dimensões da sala1
-    alturaSala1 = 20;
-    larguraSala1 = 40;
-
+    altSala1 = 20;
+    largSala1 = 40;
 
     // Defina o número de monstros por sala (altere para 1)
     numMonstrosPorSala = 1;
-
 
     WINDOW *win = newwin(40, 160, 0, 0);
     nodelay(win, 1);
     timeout(100);
 
-
     // Chame a função jogarRogue com o número de monstros por sala
-    jogarRogue(win, alturaSala1, larguraSala1, numMonstrosPorSala);
+    jogarRogue(win, altSala1, largSala1, numMonstrosPorSala);
+
 
 
     endwin();

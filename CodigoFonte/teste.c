@@ -1,74 +1,85 @@
 #include <ncurses.h>
-#include <string.h>
-#include <unistd.h> // usar a funcao sleep
-#include <time.h>
 #include <stdlib.h>
 
-#define altura 40
-#define largura 160
+struct ChaveColetada {
+    int total;
+};
 
+void desenharJogador(WINDOW *win, int x, int y) {
+    mvwprintw(win, y, x, "P");
+}
 
-void menu_pausar(){
+void desenharChave(WINDOW *win, int x, int y) {
+    mvwprintw(win, y, x, "K");
+}
+
+int main() {
+    // Inicializa a biblioteca ncurses
     initscr();
     cbreak();
     noecho();
     keypad(stdscr, TRUE);
+
     curs_set(0);
     clear();
-    resize_term(40, 160);
-    WINDOW *win = newwin(10, 40, 15, 60);
-    box(win, 0,0);
-
     refresh();
 
-    char *textos[]= {"REINICIAR", "CONTINUAR", "MENU  ", "SAIR  "};
-    int num_textos = sizeof(textos) / sizeof(textos[0]);
-    
-    int escolha = 1;
+    // Cria uma janela principal
+    WINDOW *win = newwin(40, 160, 0, 0);
+    box(win, 0, 0);
+    wrefresh(win);
 
-    
-    while(1){
+    int altura, largura;
+    getmaxyx(win, altura, largura);
 
-    for (int i = 0; i < num_textos; i++) {
-        mvwprintw(win, 3 + i, 16, (escolha == i + 1) ? ">%s" : " %s", textos[i]);
+    int jogadorX = largura / 2;
+    int jogadorY = altura / 2;
+
+    int chaveX = rand() % largura;
+    int chaveY = rand() % altura;
+
+    struct ChaveColetada chaves = {0};
+
+    while (1) {
+        // Limpa a janela principal
+        wclear(win);
+        box(win, 0, 0);
+
+        if (jogadorX == chaveX && jogadorY == chaveY) {
+            chaves.total++;
+            chaveX = rand() % largura;
+            chaveY = rand() % altura;
+        }
+
+        // Desenha o jogador e a chave na janela principal
+        desenharJogador(win, jogadorX, jogadorY);
+        desenharChave(win, chaveX, chaveY);
+
+        // Atualiza a janela principal
+        wrefresh(win);
+
+        int tecla = wgetch(win);
+
+        switch (tecla) {
+            case KEY_LEFT:
+                if (jogadorX > 1) jogadorX--;
+                break;
+            case KEY_RIGHT:
+                if (jogadorX < largura - 2) jogadorX++;
+                break;
+            case KEY_UP:
+                if (jogadorY > 1) jogadorY--;
+                break;
+            case KEY_DOWN:
+                if (jogadorY < altura - 2) jogadorY++;
+                break;
+        }
+
+        if (tecla == 'q') break;
     }
 
-    wrefresh(win);
-    int key = getch();
-
-    switch (key){ // switch permite q um valor seja comparado com vários casos.
-        case KEY_UP:
-            escolha = (escolha > 1) ? escolha - 1 : num_textos;
-            break;
-        case KEY_DOWN:
-            escolha = (escolha < num_textos ) ? escolha + 1 : 1 ;
-            break;
-        case 10:
-            switch (escolha)
-            {
-            case 1:
-                break;
-            case 2:
-                break;
-            case 3:
-                break;
-
-            case 4:
-                break;
-            } break;
+    // Finaliza a janela e a biblioteca ncurses
     wrefresh(win);
     wgetch(win);
     endwin();
-    return;
-    }
-
-    }
-
-
-}
-
-int main(){
-        menu_pausar();
-        return 0;
-
 }

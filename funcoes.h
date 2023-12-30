@@ -28,17 +28,37 @@ typedef struct {
     int quantidade; // Número atual de jogadores no ranking
 } Ranking;
 
+typedef struct {
+    int alt;
+    int larg;
+    char **layout;
+} Sala;
+
+typedef struct {
+    int posY;
+    int posX;
+    char character;
+} Boneco;
+
+typedef struct {
+    int posY;
+    int posX;
+    char character;
+    int coletada;
+} Chave;
 
 const char* dificuldadeToString(ModoDificuldade dificuldade);
 
 //--------------------FUNCOES ----------------------------//
 
-Jogador WIN_NICK_JOG(Jogador jogador);
+Jogador WIN_NICK_JOG();
 void ABERTURA();
 
 //-------- FUNCOES DO MENU PRINCIPAL (MAIN) ---------//
 
+//void JOGAR_MAIN();
 
+void jogarRogue(Jogador jogador);
 void JOGAR(Jogador jogador);
 void RANKING(Jogador jogador);
 char CONFIGURACOES(Jogador jogador);
