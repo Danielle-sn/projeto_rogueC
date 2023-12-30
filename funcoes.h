@@ -47,6 +47,13 @@ typedef struct {
     int coletada;
 } Chave;
 
+typedef struct {
+    int posX;
+    int posY;
+    char character;
+} Monstro;
+
+
 const char* dificuldadeToString(ModoDificuldade dificuldade);
 
 //--------------------FUNCOES ----------------------------//
@@ -58,7 +65,6 @@ void ABERTURA();
 
 //void JOGAR_MAIN();
 
-void jogarRogue(Jogador jogador);
 void JOGAR(Jogador jogador);
 void RANKING(Jogador jogador);
 char CONFIGURACOES(Jogador jogador);

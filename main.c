@@ -69,8 +69,7 @@ void exibirmenu() {
                 switch (escolha){
                 case 1:
                     jogador =  WIN_NICK_JOG(jogador);
-                    jogarRogue(jogador);
-                    //JOGAR(jogador);
+                    JOGAR(jogador);
                     RANKING(jogador);
                     break;
                 case 2:

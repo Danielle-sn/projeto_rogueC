@@ -330,9 +330,6 @@ void RANKING(Jogador jogador) {
 
     wrefresh(win);
     wgetch(win);
-
-    wrefresh(win);
-    wgetch(win);
     endwin();
     return;
 }
@@ -350,7 +347,7 @@ void menu_pausar(){
 
     refresh();
 
-    char *textos[]= {"REINICIAR", "CONTINUAR"," RANKING", "  MENU  ", "  SAIR  "};
+    char *textos[]= {"REINICIAR", "CONTINUAR"," RANKING", "  SAIR  "};
     int num_textos = sizeof(textos) / sizeof(textos[0]);
     
     int escolha = 1;
@@ -364,6 +361,7 @@ void menu_pausar(){
 
     wrefresh(win);
     int key = getch();
+    Jogador jogador;
 
     switch (key){ // switch permite q um valor seja comparado com vários casos.
         case KEY_UP:
@@ -378,14 +376,12 @@ void menu_pausar(){
                 // REINICIAR O JOGO
                 break;
             case 2:
-                // CONTINUr jogando
                 return;
             case 3:
-                //RANKING
+                RANKING(jogador);
+                menu_pausar();
                 return;
             case 4:
-                //VOLTAR AO MENU
-            case 5:
                 endwin();
                 exit(0); 
 
@@ -621,8 +617,34 @@ void moverBoneco(Boneco *boneco, Sala *sala, int deltaY, int deltaX, Chave *chav
     }
 }
 
+///////////////// MONSTRO //////
+Monstro criarMonstro(Sala *sala, int comecoY, int comecoX, int alt, int larg) {
+    Monstro monstro;
 
-void jogarRogue(Jogador jogador) {
+
+    do {
+        monstro.posX = rand() % (larg - 2) + comecoX + 1;
+        monstro.posY = rand() % (alt - 2) + comecoY + 1;
+    } while (sala->layout[monstro.posY - comecoY][monstro.posX - comecoX] != '.' ||
+            sala->layout[monstro.posY - comecoY + 1][monstro.posX - comecoX] != '.');
+
+
+    monstro.character = 'M';
+
+    // Adiciona a chave à matriz da sala
+    sala->layout[monstro.posY - comecoY][monstro.posX - comecoX] = monstro.character;
+
+
+    return monstro;
+}
+
+
+void exibirMonstro(Monstro monstro, Sala sala) {
+        mvaddch(monstro.posY, monstro.posX, monstro.character);
+}
+
+
+void JOGAR(Jogador jogador) {
 
     initscr(); 
     noecho(); // esconde o cursor
@@ -636,6 +658,7 @@ void jogarRogue(Jogador jogador) {
     Sala sala1, sala2, sala3;
     Chave chave;
     Chave chaveSala1, chaveSala2, chaveSala3;
+    Monstro monstroSala1, monstroSala2, monstroSala3;
     Boneco boneco;
     criarSala(&sala1, 20, 40);
     criarSala(&sala2, 15, 30);
@@ -646,6 +669,11 @@ void jogarRogue(Jogador jogador) {
     chaveSala2 = criarChave(&sala2, 20, 80, 15, 30);
     chaveSala3 = criarChave(&sala3, 13, 120, 10, 20);
     
+    monstroSala1 = criarMonstro(&sala1, 7, 20, 20, 40);
+    monstroSala2 = criarMonstro(&sala2, 20, 80, 15, 30);
+    monstroSala3 = criarMonstro(&sala3, 13, 120, 10, 20);
+
+    
     //captr o tempo para ranking
     time_t inicio_tempo, tempo_atual;
     jogador.tempo = 0;
@@ -653,13 +681,13 @@ void jogarRogue(Jogador jogador) {
     int tempo_limite = 20;  // Tempo padrão
     switch (jogador.dificuldade) {
             case FACIL:
-                tempo_limite = 2;
+                tempo_limite = 10;
                 break;
             case MEDIO:
-                tempo_limite = 5;
+                tempo_limite = 15;
                 break;
             case DIFICIL:
-                tempo_limite = 5;
+                tempo_limite = 25;
                 break;
             default:
                 break;
@@ -668,15 +696,14 @@ void jogarRogue(Jogador jogador) {
 
     while (1) {
         werase(win);
-        time(&tempo_atual);
-        jogador.tempo = difftime(tempo_atual, inicio_tempo);
-
 
         time(&tempo_atual);
         jogador.tempo = difftime(tempo_atual, inicio_tempo);
 
         mvwprintw(win, 3, 35, "TEMPO: %d segundos", (int)jogador.tempo);
         usleep(1000);
+        wrefresh(win);
+
         mvwprintw(win, 5, 35, "Dificuldade: %s", dificuldadeToString(jogador.dificuldade));
 
         mvwprintw(win, 4, 35, "Personagem: %c", jogador.personagem);
@@ -691,11 +718,17 @@ void jogarRogue(Jogador jogador) {
         exibirChave(chaveSala1, sala1);
         exibirChave(chaveSala2, sala2);
         exibirChave(chaveSala3, sala3);
+
+        exibirMonstro(monstroSala1, sala1);
+        exibirMonstro(monstroSala2, sala2);
+        exibirMonstro(monstroSala3, sala3);
+
         
-        
-        //if (boneco.posY == chave.posY && boneco.posX == chave.posX){
-        //mvwaddch(win, chave.posY, chave.posX, '.');
-        //}
+        if (jogador.tempo >= tempo_limite) {
+        mvwprintw(win, 14, 23, "Tempo esgotado!");
+        adicionarAoRanking(jogador);
+        break;
+    }
 
         wrefresh(win); 
 
@@ -725,7 +758,7 @@ moverBoneco(&boneco, &sala1, 0, -1, chaves);
 moverBoneco(&boneco, &sala1, 0, 1, chaves);
                 break;
             case 27: // ESC
-                //gameover = 1;
+                menu_pausar();
                 break;
         }
     }
@@ -736,120 +769,6 @@ endwin();
 
 
 //void JOGAR_MAIN() {
-
-
-
-
-/////////////////////////////////////////////////////
-
-void JOGAR(Jogador jogador){
-    initscr();
-    cbreak();
-    noecho();
-    keypad(stdscr, TRUE);
-    curs_set(0);
-    clear();
-    refresh();
-    resize_term(40, 160);
-    WINDOW *win = newwin(altura, largura, 0, 0);
-    box(win, 0, 0);
-    nodelay(win, TRUE);
-
-    time_t inicio_tempo, tempo_atual;
-    jogador.tempo = 0;
-    time(&inicio_tempo);
-
-    // Ajuste de acordo com a dificuldade escolhida
-    int range_max = 10;  // Faixa padrão
-    int tempo_limite = 20;  // Tempo padrão
-
-    switch (jogador.dificuldade) {
-        case FACIL:
-            range_max = 4;
-            tempo_limite = 2;
-            break;
-        case MEDIO:
-            range_max = 8;
-            tempo_limite = 5;
-            break;
-        case DIFICIL:
-            range_max = 10;
-            tempo_limite = 5;
-            break;
-        default:
-            break;
-    }
-
-    int numero_secreto = rand() % range_max + 1; // Escolher um número aleatório entre 1 e range_max
-    int palpite, tentativas = 0;
-
-    // Imprime a dificuldade escolhida
-    mvwprintw(win, 15, 23, "Dificuldade: %s", dificuldadeToString(jogador.dificuldade));
-    mvwprintw(win, 16, 23, "Personagem: %c", jogador.personagem);
-    wrefresh(win);
-
-    while (1) {
-    // Verificar se o tempo limite foi atingido antes de solicitar uma nova tentativa
-    time(&tempo_atual);
-    jogador.tempo = difftime(tempo_atual, inicio_tempo);
-
-
-
-    if (jogador.tempo >= tempo_limite) {
-        mvwprintw(win, 14, 23, "Tempo esgotado! O número era %d.", numero_secreto);
-        menu_pausar();
-        break;
-    }
-
-    mvwprintw(win, 10, 23, "Adivinhe o número:");
-    wrefresh(win);
-    // Atualizar tempo na tela
-    mvwprintw(win, 13, 23, "Tempo: %d segundos", (int)jogador.tempo);
-    usleep(100000);
-
-    echo();
-
-    char palpite_str[10];  // Ajuste o tamanho conforme necessário
-    mvwgetnstr(win, 10, 43, palpite_str, sizeof(palpite_str));
-
-    // Atualizar tempo na tela
-    mvwprintw(win, 13, 23, "Tempo: %d segundos", (int)jogador.tempo);
-    usleep(100000);
-
-    noecho();
-
-    // Converta a string para um número
-    if (sscanf(palpite_str, "%d", &palpite) != 1) {
-        mvwprintw(win, 12, 23, "Por favor, digite um número válido.");
-        wrefresh(win);
-        continue;
-    }
-
-    tentativas++;
-
-    if (palpite == numero_secreto) {
-        mvwprintw(win, 12, 23, "Parabéns! Você acertou em %d tentativas.", tentativas);
-        jogador.tempo = difftime(time(NULL), inicio_tempo);
-        adicionarAoRanking(jogador);
-        break;
-    } else {
-        mvwprintw(win, 12, 23, "Tente novamente!");
-    }
-
-    // Atualizar tempo na tela
-    mvwprintw(win, 13, 23, "Tempo: %d segundos", (int)jogador.tempo);
-    usleep(100000);
-
-    wrefresh(win);
-}
-
-    wrefresh(win);
-    wgetch(win);
-    wclear(win);
-    endwin();
-    return;
-}
-
 
 
 
